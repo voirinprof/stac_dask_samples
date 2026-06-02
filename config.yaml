@@ -1,0 +1,34 @@
+# ──────────────────────────────────────────────────────────────
+# GMQ 580 - Séance 05 | Configuration centrale
+# Tous les scripts lisent ce fichier via load_config()
+# ──────────────────────────────────────────────────────────────
+
+stac:
+  catalogue_url: "https://earth-search.aws.element84.com/v1"
+  collection:    "sentinel-2-l2a"
+
+zone:
+  # Sherbrooke — EPSG:4326 [lon_ouest, lat_sud, lon_est, lat_nord]
+  bbox:        [-72.15, 45.30, -71.65, 45.65]
+  name:        "Sherbrooke"
+
+period:
+  dates:       "2024-06-01/2024-08-31"
+
+filters:
+  max_cloud_cover: 20       # % couverture nuageuse maximale
+  valid_scl:       [4, 5, 6, 7]   # végétation, sol nu, eau, non classifié
+
+loading:
+  crs:         "EPSG:32198"  # MTM Québec, mètres
+  resolution:  10            # mètres (Sentinel-2)
+  bands:       ["red", "nir", "scl"]
+  bands_rgb:   ["red", "green", "blue"]  # pour visualisation (simplifié)
+
+dask:
+  chunk_x:    512
+  chunk_y:    512
+  chunk_time: 1
+
+thresholds:
+  ndvi_vegetation: 0.35

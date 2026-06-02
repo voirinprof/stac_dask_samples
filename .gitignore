@@ -1,0 +1,56 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+*.egg
+.eggs/
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb
+
+# Virtual environments
+.env
+.venv
+env/
+venv/
+ENV/
+
+# Conda
+.conda/
+
+# Geospatial data
+*.tif
+*.tiff
+*.geotiff
+*.nc
+*.zarr/
+*.h5
+*.hdf5
+*.shp
+*.shx
+*.dbf
+*.prj
+*.gpkg
+data/
+output/
+cache/
+
+# Dask
+dask-worker-space/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
