@@ -26,6 +26,14 @@ pip install -r requirements.txt
 > nécessitent une connexion internet pour accéder aux catalogues
 > STAC publics (Element84 / AWS).
 
+> Il peut arriver sous Windows que la lib rasterio soit mal installée
+> Vous allez avoir une erreur avec le DLL (comme *ImportError: DLL load failed while importing _rasterio: The specified module could not be found.*)
+> Vous pouvez essayer ces 2 options :
+```bash
+conda install -c conda-forge rasterio
+# ou
+pip install --force-reinstall rasterio
+```
 ---
 
 ## Structure

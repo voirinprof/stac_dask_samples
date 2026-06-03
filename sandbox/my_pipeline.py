@@ -129,8 +129,10 @@ print("=" * 60)
 client = Client.open(CATALOGUE_URL)
 
 # Rechercher les scènes pour chaque période
-items_a = []           # TODO : recherche période A
-items_b = []           # TODO : recherche période B
+# items_a = []           # TODO : recherche période A
+# items_b = []           # TODO : recherche période B
+items_a = search_items(client, PERIODE_A, MAX_CLOUD)
+items_b = search_items(client, PERIODE_B, MAX_CLOUD)
 
 
 # Afficher le résumé des résultats
@@ -167,9 +169,11 @@ print("ÉTAPE 2 — Chargement odc-stac")
 print("=" * 60)
 
 # charger les datasets pour la période A et B
-ds_a = None   # TODO : charger les datasets pour la période A
-ds_b = None   # TODO : charger les datasets pour la période B
+# ds_a = None   # TODO : charger les datasets pour la période A
+# ds_b = None   # TODO : charger les datasets pour la période B
 
+ds_a = load_dataset(items_a, "A")
+ds_b = load_dataset(items_b, "B")
 
 # ══════════════════════════════════════════════════════════════════════════════
 # ÉTAPE 3 — Masque nuages et calcul NDVI (lazy)
@@ -193,8 +197,11 @@ print("ÉTAPE 3 — Masque nuages et calcul NDVI (lazy)")
 print("=" * 60)
 
 # on doit calculer un NDVI lazy pour chaque période, avec NaN sur les pixels invalides
-ndvi_a = None   # TODO : NDVI lazy pour la période A
-ndvi_b = None   # TODO : NDVI lazy pour la période B
+# ndvi_a = None   # TODO : NDVI lazy pour la période A
+# ndvi_b = None   # TODO : NDVI lazy pour la période B
+
+ndvi_a = compute_ndvi_masked(ds_a)
+ndvi_b = compute_ndvi_masked(ds_b)
 
 print("NDVI A lazy :", ndvi_a)
 print("NDVI B lazy :", ndvi_b)
@@ -221,13 +228,17 @@ print("=" * 60)
 
 # on doit créer une image composite par période
 # avec un pixel ayant le NDVI maximum sur la dimension temporelle
-composite_a  = None   # TODO : NDVI max période A
-composite_b  = None   # TODO : NDVI max période B
+# composite_a  = None   # TODO : NDVI max période A
+# composite_b  = None   # TODO : NDVI max période B
+composite_a = ndvi_a.max(dim="time")
+composite_b = ndvi_b.max(dim="time")
 
 # on doit aussi calculer le nombre de scènes valides par pixel
-n_valid_a    = None   # TODO : nombre de scènes valides par pixel, période A
-n_valid_b    = None   # TODO : nombre de scènes valides par pixel, période B
-# ----------------------
+# n_valid_a    = None   # TODO : nombre de scènes valides par pixel, période A
+# n_valid_b    = None   # TODO : nombre de scènes valides par pixel, période B
+
+n_valid_a = ds_a["scl"].isin(VALID_SCL).sum(dim="time")
+n_valid_b = ds_b["scl"].isin(VALID_SCL).sum(dim="time")
 
 # Un seul compute pour les quatre résultats — optimal
 print("Calcul en cours (téléchargement + NDVI + max temporel)...")
@@ -269,13 +280,23 @@ print("=" * 60)
 
 # Différence NDVI entre les deux périodes
 # Un pixel est NaN si l'un des deux composites est NaN
-delta = None   # TODO : différence composite_b - composite_a
+# delta = None   # TODO : différence composite_b - composite_a
+
+# on peut calculer la différence de NDVI entre les deux composites
+# en utilisant les DataArrays xarray, ce qui préserve les coordonnées et gère les NaN automatiquement
+delta = composite_b.values - composite_a.values
 
 # Classifier les changements en trois catégories
 # +1 = gain de végétation, 0 = stable, -1 = perte de végétation
 # on peut utiliser le principe de IF imbriqués avec np.where
-change_map = None   # TODO : carte de changement (-1, 0, +1)
+# change_map = None   # TODO : carte de changement (-1, 0, +1)
 
+# > CHANGE_THRESHOLD -> 1
+# < -CHANGE_THRESHOLD -> -1
+# entre les deux -> 0
+
+change_map = np.where(delta > CHANGE_THRESHOLD, 1,
+              np.where(delta < -CHANGE_THRESHOLD, -1, 0))
 
 # Pixels invalides (NaN dans delta) → NaN dans la carte
 change_map = change_map.astype("float32")
